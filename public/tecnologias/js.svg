@@ -1,0 +1,10 @@
+<!-- js.svg -->
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <rect x="8" y="8" width="112" height="112" rx="16" fill="#F7DF1E"></rect>
+  <text x="40" y="84" font-size="56" font-family="system-ui, sans-serif" fill="#000000" font-weight="bold">
+    J
+  </text>
+  <text x="72" y="84" font-size="56" font-family="system-ui, sans-serif" fill="#000000" font-weight="bold">
+    S
+  </text>
+</svg>

@@ -1,0 +1,9 @@
+<!-- html.svg -->
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <rect x="8" y="8" width="112" height="112" rx="16" fill="#E44D26"></rect>
+  <rect x="16" y="16" width="96" height="96" rx="12" fill="#F16529"></rect>
+  <polygon points="40,40 88,40 84,96 64,104 44,96" fill="#ffffff" opacity="0.9"></polygon>
+  <text x="64" y="72" text-anchor="middle" font-size="32" font-family="system-ui, sans-serif" fill="#E44D26" font-weight="bold">
+    HTML
+  </text>
+</svg>

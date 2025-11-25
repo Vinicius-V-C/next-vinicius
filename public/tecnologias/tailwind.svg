@@ -1,0 +1,14 @@
+<!-- tailwind.svg -->
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <rect x="8" y="8" width="112" height="112" rx="24" fill="#0F172A"></rect>
+  <path d="M32 56C40 44 52 40 64 44C72 46.7 77.3 52 80 60
+           C84 72 92 76 104 72C96 84 84 88 72 84C64 81.3 58.7 76 56 68
+           C52 56 44 52 32 56Z" fill="#38BDF8"></path>
+  <path d="M24 80C32 68 44 64 56 68C64 70.7 69.3 76 72 84
+           C76 96 84 100 96 96C88 108 76 112 64 108
+           C56 105.3 50.7 100 48 92
+           C44 80 36 76 24 80Z" fill="#22C55E" opacity="0.8"></path>
+  <text x="64" y="112" text-anchor="middle" font-size="16" font-family="system-ui, sans-serif" fill="#E5E7EB">
+    tailwind
+  </text>
+</svg>

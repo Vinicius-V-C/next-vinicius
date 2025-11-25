@@ -1,0 +1,8 @@
+<!-- vercel.svg -->
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <rect x="8" y="8" width="112" height="112" rx="24" fill="#020617"></rect>
+  <polygon points="32,92 64,36 96,92" fill="#F9FAFB"></polygon>
+  <text x="64" y="112" text-anchor="middle" font-size="16" font-family="system-ui, sans-serif" fill="#9CA3AF">
+    vercel
+  </text>
+</svg>

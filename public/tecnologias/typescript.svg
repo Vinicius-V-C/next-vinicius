@@ -1,0 +1,8 @@
+<!-- typescript.svg -->
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <rect x="8" y="8" width="112" height="112" rx="16" fill="#1F2933"></rect>
+  <rect x="16" y="16" width="96" height="96" rx="12" fill="#3178C6"></rect>
+  <text x="64" y="70" text-anchor="middle" font-size="40" font-family="system-ui, sans-serif" fill="#ffffff" font-weight="bold">
+    TS
+  </text>
+</svg>

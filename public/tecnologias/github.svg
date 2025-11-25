@@ -1,0 +1,13 @@
+<!-- github.svg -->
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <rect x="8" y="8" width="112" height="112" rx="28" fill="#0F172A"></rect>
+  <circle cx="64" cy="56" r="32" fill="#111827"></circle>
+  <path d="M52 84C42 88 38 96 38 104
+           C38 104 44 108 64 108C84 108 90 104 90 104
+           C90 96 86 88 76 84" fill="none" stroke="#E5E7EB" stroke-width="3" stroke-linecap="round"></path>
+  <circle cx="52" cy="56" r="6" fill="#E5E7EB"></circle>
+  <circle cx="76" cy="56" r="6" fill="#E5E7EB"></circle>
+  <text x="64" y="24" text-anchor="middle" font-size="16" font-family="system-ui, sans-serif" fill="#9CA3AF">
+    git hub
+  </text>
+</svg>

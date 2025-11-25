@@ -1,0 +1,10 @@
+<!-- json.svg -->
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <rect x="8" y="8" width="112" height="112" rx="16" fill="#111827"></rect>
+  <rect x="22" y="22" width="84" height="84" rx="10" fill="#1F2937"></rect>
+  <text x="44" y="80" font-size="40" font-family="system-ui, sans-serif" fill="#FBBF24" font-weight="bold">{</text>
+  <text x="80" y="80" font-size="40" font-family="system-ui, sans-serif" fill="#34D399" font-weight="bold">}</text>
+  <text x="64" y="30" text-anchor="middle" font-size="16" font-family="system-ui, sans-serif" fill="#9CA3AF">
+    JSON
+  </text>
+</svg>

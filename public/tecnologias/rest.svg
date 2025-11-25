@@ -1,0 +1,18 @@
+<!-- rest.svg -->
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="restGradient" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#10B981"></stop>
+      <stop offset="100%" stop-color="#3B82F6"></stop>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="112" height="112" rx="24" fill="#0F172A"></rect>
+  <circle cx="32" cy="64" r="10" fill="#10B981"></circle>
+  <circle cx="64" cy="64" r="10" fill="#FBBF24"></circle>
+  <circle cx="96" cy="64" r="10" fill="#3B82F6"></circle>
+  <line x1="42" y1="64" x2="54" y2="64" stroke="url(#restGradient)" stroke-width="4"></line>
+  <line x1="74" y1="64" x2="86" y2="64" stroke="url(#restGradient)" stroke-width="4"></line>
+  <text x="64" y="108" text-anchor="middle" font-size="18" font-family="system-ui, sans-serif" fill="#E5E7EB">
+    REST API
+  </text>
+</svg>

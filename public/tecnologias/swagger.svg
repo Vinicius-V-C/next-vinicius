@@ -1,0 +1,14 @@
+<!-- swagger.svg -->
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <rect x="8" y="8" width="112" height="112" rx="24" fill="#022C22"></rect>
+  <circle cx="64" cy="64" r="40" fill="#16A34A"></circle>
+  <rect x="44" y="46" width="40" height="36" rx="6" fill="#ECFDF5"></rect>
+  <line x1="52" y1="54" x2="84" y2="54" stroke="#16A34A" stroke-width="3"></line>
+  <circle cx="52" cy="62" r="3" fill="#16A34A"></circle>
+  <line x1="60" y1="62" x2="84" y2="62" stroke="#16A34A" stroke-width="3"></line>
+  <circle cx="52" cy="70" r="3" fill="#16A34A"></circle>
+  <line x1="60" y1="70" x2="84" y2="70" stroke="#16A34A" stroke-width="3"></line>
+  <text x="64" y="24" text-anchor="middle" font-size="14" font-family="system-ui, sans-serif" fill="#BBF7D0">
+    swagger / openapi
+  </text>
+</svg>

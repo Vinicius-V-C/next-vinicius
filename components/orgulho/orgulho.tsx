@@ -10,11 +10,6 @@ export default function({nome, link}: OrgulhoProps) {
         <p> 
             O meu orgulho é {nome} que fiz nesse link {link}
         </p>
-
-        <div>
-            <p>https://vinicius-v-c.github.io/viniciuscardoso.github.io
-            </p>
-        </div>
         </>
     )
 }

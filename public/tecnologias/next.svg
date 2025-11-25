@@ -1,0 +1,11 @@
+<!-- next.svg -->
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <rect x="8" y="8" width="112" height="112" rx="24" fill="#020617"></rect>
+  <text x="32" y="76" font-size="32" font-family="system-ui, sans-serif" fill="#F9FAFB" font-weight="bold">
+    N
+  </text>
+  <text x="60" y="76" font-size="32" font-family="system-ui, sans-serif" fill="#E5E7EB">
+    ext
+  </text>
+  <line x1="76" y1="40" x2="100" y2="96" stroke="#4B5563" stroke-width="2"></line>
+</svg>
