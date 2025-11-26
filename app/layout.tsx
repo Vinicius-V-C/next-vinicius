@@ -36,6 +36,7 @@ export default function RootLayout({
               <li><Link href ="/sobre">Sobre</Link></li>
               <li><Link href = "/projetos">Projetos</Link></li>
               <li><Link href = "/orgulho">Orgulho</Link></li>
+              <li><Link href = "/contador">Contador</Link></li>
             </ul>
           </nav>
         </header>
@@ -49,32 +50,5 @@ export default function RootLayout({
       </body>
     </html>
   );
-  /*
-  return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} 
-        antialiased h-min-screen flex flex-col justify-center items-center`
-      }>
-        <header>
-        <h1> A minha app </h1>
-          <nav>
-            <ul className="flex gap-2" >
-              <li><Link href ="/">Intro</Link></li>
-              <li><Link href ="/sobre">Sobre</Link></li>
-              <li><Link href = "/projetos">projetos</Link></li>
-              <li><Link href = "/orgulho">orgulho</Link></li>
-            </ul>
-          </nav>
-        </header>
-        <main>
-          {children}
-        </main>
-        <footer>
-        DIW
-        </footer>
-      </body>
-    </html>
-  );
-  */
+
 }
