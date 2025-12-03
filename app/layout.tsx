@@ -24,7 +24,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
+//
   const data = new Date();
 
   return (
