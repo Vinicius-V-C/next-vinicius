@@ -27,25 +27,26 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className='flex flex-col justify-start gap-4 p-20 items-center min-h-screen'>
-        
+
         <header className="flex flex-col items-center">
           <h1>React & Next.js</h1>
           <nav>
             <ul className="flex gap-4 list-none m-0 p-0" >
-              <li><Link href ="/">Intro</Link></li>
-              <li><Link href ="/sobre">Sobre</Link></li>
-              <li><Link href = "/projetos">Projetos</Link></li>
-              <li><Link href = "/orgulho">Orgulho</Link></li>
-              <li><Link href = "/contador">Contador</Link></li>
-               <li><Link href = "/Input">Input</Link></li>
+              <li><Link href="/">Intro</Link></li>
+              <li><Link href="/sobre">Sobre</Link></li>
+              <li><Link href="/projetos">Projetos</Link></li>
+              <li><Link href="/orgulho">Orgulho</Link></li>
+              <li><Link href="/contador">Contador</Link></li>
+              <li><Link href="/Input">Input</Link></li>
+              <li><Link href="/produtos">Produtos</Link></li>
             </ul>
           </nav>
         </header>
-        
+
         <main className="bg-blue-200 p-5 rounded-2xl max-w-2xl min-h-[70vh]">
           {children}
         </main>
-        
+
         <footer>DIW {data.getFullYear()}</footer>
 
       </body>

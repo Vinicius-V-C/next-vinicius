@@ -1,4 +1,3 @@
-
 // Avaliação (rating) de um produto
 export interface Rating {
   rate: number;   // classificação média
@@ -13,5 +12,5 @@ export interface Product {
   description: string;
   category: string;
   image: string;
-  rating: Rating; // usa a interface Rating
+  rating: Rating; // usa a interface Rating definida acima
 }
