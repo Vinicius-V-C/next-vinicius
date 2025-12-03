@@ -1,6 +1,5 @@
-import ComponenteContador from '@/components/compenenteProjetos/ComponentesProjetos'
+import Contador from "@/components/componenteContador/componenteContador";
 
-export default function ConmtadorPage(){
-
-    return <ComponenteContador/>
+export default function ContadorPage() {
+  return <Contador />;
 }
