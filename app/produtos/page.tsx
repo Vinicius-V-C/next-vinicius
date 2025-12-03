@@ -1,3 +1,4 @@
+// app/produtos/page.tsx
 "use client";
 
 import useSWR from "swr";
@@ -8,7 +9,9 @@ const API_URL = "https://deisishop.pythonanywhere.com/products";
 
 async function fetcher(url: string): Promise<Product[]> {
   const res = await fetch(url);
-  if (!res.ok) throw new Error("Erro ao carregar produtos");
+  if (!res.ok) {
+    throw new Error("Erro ao carregar produtos");
+  }
   return res.json();
 }
 
@@ -18,28 +21,70 @@ export default function ProdutosPage() {
     refreshInterval: 0,
   });
 
-  if (isLoading) return <p>A carregar...</p>;
-  if (error) return <p>Erro ao carregar produtos.</p>;
-  if (!data) return <p>Sem dados.</p>;
+  if (isLoading)
+    return (
+      <main className="min-h-screen bg-sky-200 flex items-center justify-center">
+        <p>A carregar...</p>
+      </main>
+    );
+
+  if (error)
+    return (
+      <main className="min-h-screen bg-sky-200 p-4">
+        <h1 className="text-3xl font-bold mb-4">Produtos</h1>
+        <p className="text-red-700">Ocorreu um erro ao carregar os produtos.</p>
+      </main>
+    );
+
+  if (!data)
+    return (
+      <main className="min-h-screen bg-sky-200 p-4">
+        <h1 className="text-3xl font-bold mb-4">Produtos</h1>
+        <p>Sem dados disponíveis.</p>
+      </main>
+    );
 
   return (
     <main className="p-4 bg-sky-200 min-h-screen">
-      <h1 className="text-3xl font-bold mb-4">Produtos</h1>
+      <h1 className="text-3xl font-bold mb-6">Produtos</h1>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      {/* ❗ Apenas 1 produto por linha */}
+      <div className="grid grid-cols-1 gap-6">
         {data.map((p) => (
           <div
             key={p.id}
-            className="bg-white rounded-xl shadow p-3 flex flex-col items-center"
+            className="bg-white rounded-xl shadow p-6 flex flex-col items-center text-center space-y-4"
           >
+            {/* Imagem maior */}
             <Image
               src={p.image}
-              width={120}
-              height={120}
+              width={220}
+              height={220}
               alt={p.title}
-              className="rounded-md"
+              className="rounded-md object-contain"
             />
-            <p className="mt-2 font-semibold text-center">{p.title}</p>
+
+            {/* Título */}
+            <h2 className="text-xl font-semibold">{p.title}</h2>
+
+            {/* Categoria */}
+            <p className="text-sm text-gray-500 italic">{p.category}</p>
+
+            {/* Preço */}
+            <p className="text-2xl font-bold">{p.price.toFixed(2)} €</p>
+
+            {/* Descrição COMPLETA – como estava antes */}
+            <p className="text-base text-gray-700 leading-relaxed">
+              {p.description}
+            </p>
+
+            {/* Rating com estrela */}
+            <p className="text-base font-medium text-gray-800">
+              ⭐ {p.rating?.rate ?? "N/A"}{" "}
+              <span className="text-gray-500">
+                ({p.rating?.count ?? 0} avaliações)
+              </span>
+            </p>
           </div>
         ))}
       </div>
