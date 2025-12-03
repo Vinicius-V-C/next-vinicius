@@ -48,14 +48,14 @@ export default function ProdutosPage() {
     <main className="p-4 bg-sky-200 min-h-screen">
       <h1 className="text-3xl font-bold mb-6">Produtos</h1>
 
-      {/* ❗ Apenas 1 produto por linha */}
+      {/* Apenas 1 produto por linha */}
       <div className="grid grid-cols-1 gap-6">
         {data.map((p) => (
           <div
             key={p.id}
             className="bg-white rounded-xl shadow p-6 flex flex-col items-center text-center space-y-4"
           >
-            {/* Imagem maior */}
+            {/* Imagem */}
             <Image
               src={p.image}
               width={220}
@@ -73,12 +73,12 @@ export default function ProdutosPage() {
             {/* Preço */}
             <p className="text-2xl font-bold">{p.price.toFixed(2)} €</p>
 
-            {/* Descrição COMPLETA – como estava antes */}
+            {/* Descrição */}
             <p className="text-base text-gray-700 leading-relaxed">
               {p.description}
             </p>
 
-            {/* Rating com estrela */}
+            {/* Rating  */}
             <p className="text-base font-medium text-gray-800">
               ⭐ {p.rating?.rate ?? "N/A"}{" "}
               <span className="text-gray-500">
