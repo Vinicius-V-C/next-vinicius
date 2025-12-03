@@ -1,20 +1,23 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
 
 export default function Relogio() {
-  const [agora, setAgora] = useState(new Date());
+  const [hora, setHora] = useState<string>(""); // começa vazio e igual no server e no client
 
   useEffect(() => {
-    const id = setInterval(() => {
-      setAgora(new Date());
-    }, 1000);
+    function atualizarHora() {
+      setHora(new Date().toLocaleTimeString("pt-PT"));
+    }
+
+    // atualiza logo ao montar
+    atualizarHora();
+
+    // e depois de segundo em segundo
+    const id = setInterval(atualizarHora, 1000);
 
     return () => clearInterval(id);
   }, []);
 
-  const horaFormatada = agora.toLocaleTimeString("pt-PT");
-
-  return <span>{horaFormatada}</span>;
+  return <span>{hora || "--:--:--"}</span>;
 }

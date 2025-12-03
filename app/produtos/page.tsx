@@ -7,13 +7,15 @@ import type { Product } from "@/models/interfaces";
 
 const API_URL = "https://deisishop.pythonanywhere.com/products";
 
-async function fetcher(url: string): Promise<Product[]> {
+
+const fetcher = async (url: string) => {
   const res = await fetch(url);
+
   if (!res.ok) {
-    throw new Error("Erro ao carregar produtos");
+    throw new Error(`Erro: ${res.status} ${res.statusText}`);
   }
   return res.json();
-}
+};
 
 export default function ProdutosPage() {
   const { data, error, isLoading } = useSWR<Product[]>(API_URL, fetcher, {
@@ -48,14 +50,12 @@ export default function ProdutosPage() {
     <main className="p-4 bg-sky-200 min-h-screen">
       <h1 className="text-3xl font-bold mb-6">Produtos</h1>
 
-      {/* Apenas 1 produto por linha */}
       <div className="grid grid-cols-1 gap-6">
         {data.map((p) => (
           <div
             key={p.id}
             className="bg-white rounded-xl shadow p-6 flex flex-col items-center text-center space-y-4"
           >
-            {/* Imagem */}
             <Image
               src={p.image}
               width={220}
@@ -64,21 +64,14 @@ export default function ProdutosPage() {
               className="rounded-md object-contain"
             />
 
-            {/* Título */}
             <h2 className="text-xl font-semibold">{p.title}</h2>
-
-            {/* Categoria */}
             <p className="text-sm text-gray-500 italic">{p.category}</p>
-
-            {/* Preço */}
             <p className="text-2xl font-bold">{p.price.toFixed(2)} €</p>
 
-            {/* Descrição */}
             <p className="text-base text-gray-700 leading-relaxed">
               {p.description}
             </p>
 
-            {/* Rating  */}
             <p className="text-base font-medium text-gray-800">
               ⭐ {p.rating?.rate ?? "N/A"}{" "}
               <span className="text-gray-500">
