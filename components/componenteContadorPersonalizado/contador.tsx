@@ -3,14 +3,12 @@
 import { useEffect, useState } from "react";
 
 type ContadorPersonalizadoProps = {
-  title: string; // identifica a tecnologia
+  title: string;
 };
 
 const PREFIXO_STORAGE = "likes_tech_";
 
-export default function Contador({
-  title,
-}: ContadorPersonalizadoProps) {
+export default function Contador({ title }: ContadorPersonalizadoProps) {
   const [likes, setLikes] = useState(0);
 
   // Ler do localStorage quando o componente monta
@@ -25,16 +23,17 @@ export default function Contador({
     }
   }, [title]);
 
-  // Guardar no localStorage sempre que os likes mudam
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const chave = PREFIXO_STORAGE + title;
-    window.localStorage.setItem(chave, String(likes));
-  }, [title, likes]);
-
   function incrementar() {
-    setLikes((v) => v + 1);
+    setLikes((anterior) => {
+      const novo = anterior + 1;
+
+      if (typeof window !== "undefined") {
+        const chave = PREFIXO_STORAGE + title;
+        window.localStorage.setItem(chave, String(novo));
+      }
+
+      return novo;
+    });
   }
 
   return (
