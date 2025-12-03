@@ -9,46 +9,29 @@ export default function Contador() {
     const [valor, setValor] = useState<number>(0);
     const [historico, setHistorico] = useState<number[]>([]);
 
-    // Carregar valores do localStorage
+    // 🔥 Resetar sempre que a página carregar
     useEffect(() => {
-        const guardado = localStorage.getItem("contador_valor");
-        const guardadoHist = localStorage.getItem("contador_hist");
-
-        if (guardado !== null) setValor(Number(guardado));
-
-        if (guardadoHist !== null) {
-            try {
-                setHistorico(JSON.parse(guardadoHist));
-            } catch {
-                setHistorico([]);
-            }
-        }
+        setValor(0);
+        setHistorico([]);
     }, []);
 
-    // Guardar valor E histórico sempre que mudarem
-    useEffect(() => {
-        localStorage.setItem("contador_valor", String(valor));
-        localStorage.setItem("contador_hist", JSON.stringify(historico));
-    }, [valor, historico]);
-
-    function registar(novo: number) {
-        setValor(() => {
-            const limitado = Math.min(MAX, Math.max(MIN, novo));
-            setHistorico((h) => [...h, limitado]);
-            return limitado;
-        });
+    // Registar novo valor apenas uma vez
+    function atualizarValor(novo: number) {
+        const limitado = Math.min(MAX, Math.max(MIN, novo));
+        setValor(limitado);
+        setHistorico((h) => [...h, limitado]);
     }
 
     function incrementar() {
-        registar(valor + 1);
+        atualizarValor(valor + 1);
     }
 
     function decrementar() {
-        registar(valor - 1);
+        atualizarValor(valor - 1);
     }
 
     function reset() {
-        registar(0);
+        atualizarValor(0);
     }
 
     function corNumero(n: number) {
@@ -72,7 +55,6 @@ export default function Contador() {
                 <button className={estiloBotao} onClick={incrementar}>+1</button>
             </div>
 
-            {/* LISTA <ul> com os valores por onde passou */}
             <div className="mt-4 w-full text-center">
                 <h2 className="font-semibold mb-2">Histórico de valores</h2>
 
