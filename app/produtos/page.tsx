@@ -4,8 +4,7 @@ import useSWR from "swr";
 import Image from "next/image";
 import type { Product } from "@/models/interfaces";
 
-const API_URL = "https://deisishop.pythonanywhere.com/products";
-
+const API_URL = "https://deisishop.pythonanywhere.com/products/";
 
 const fetcher = async (url: string) => {
   const res = await fetch(url);
@@ -35,7 +34,8 @@ export default function ProdutosPage() {
         <h1 className="text-3xl font-bold mb-4">Produtos</h1>
         <p className="text-red-700">
           {error.message}
-          Ocorreu um erro ao carregar os produtos.</p>
+          Ocorreu um erro ao carregar os produtos.
+        </p>
       </main>
     );
 
@@ -67,7 +67,9 @@ export default function ProdutosPage() {
 
             <h2 className="text-xl font-semibold">{p.title}</h2>
             <p className="text-sm text-gray-500 italic">{p.category}</p>
-            <p className="text-2xl font-bold">{p.price.toFixed(2)} €</p>
+
+            {/* ÚNICA ALTERAÇÃO AQUI */}
+            <p className="text-2xl font-bold">{Number(p.price).toFixed(2)} €</p>
 
             <p className="text-base text-gray-700 leading-relaxed">
               {p.description}
