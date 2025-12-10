@@ -1,4 +1,3 @@
-// app/produtos/page.tsx
 "use client";
 
 import useSWR from "swr";
@@ -34,7 +33,9 @@ export default function ProdutosPage() {
     return (
       <main className="min-h-screen bg-sky-200 p-4">
         <h1 className="text-3xl font-bold mb-4">Produtos</h1>
-        <p className="text-red-700">Ocorreu um erro ao carregar os produtos.</p>
+        <p className="text-red-700">
+          {error.message}
+          Ocorreu um erro ao carregar os produtos.</p>
       </main>
     );
 

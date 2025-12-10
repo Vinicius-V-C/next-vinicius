@@ -9,17 +9,28 @@ export default function Contador() {
     const [valor, setValor] = useState<number>(0);
     const [historico, setHistorico] = useState<number[]>([]);
 
-    // 🔥 Resetar sempre que a página carregar
+    // Ao carregar a página: lê apenas o valor do localStorage e limpa o histórico
     useEffect(() => {
-        setValor(0);
+        const salvoValor = localStorage.getItem("contador.valor");
+
+        if (salvoValor !== null) {
+            setValor(Number(salvoValor));
+        } else {
+            setValor(0);
+        }
+
+        // histórico começa sempre vazio
         setHistorico([]);
     }, []);
 
-    // Registar novo valor apenas uma vez
+    useEffect(() => {
+        localStorage.setItem("contador.valor", String(valor));
+    }, [valor]);
+
     function atualizarValor(novo: number) {
         const limitado = Math.min(MAX, Math.max(MIN, novo));
         setValor(limitado);
-        setHistorico((h) => [...h, limitado]);
+        setHistorico((h) => [...h, limitado]); // histórico só vive na memória
     }
 
     function incrementar() {
@@ -59,7 +70,9 @@ export default function Contador() {
                 <h2 className="font-semibold mb-2">Histórico de valores</h2>
 
                 {historico.length === 0 ? (
-                    <p className="text-gray-500 text-sm">Ainda sem valores registados...</p>
+                    <p className="text-gray-500 text-sm">
+                        Ainda sem valores registados...
+                    </p>
                 ) : (
                     <ul className="list-disc list-inside">
                         {historico.map((v, i) => (

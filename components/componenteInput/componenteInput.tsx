@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type Tarefa = {
   id: number;
   texto: string;
   tecnologia: string;
 };
+
+const STORAGE_TAREFAS = "app.tarefas";
+const STORAGE_CATEGORIA = "app.categoria";
 
 export default function Input() {
   // 1) Input único (texto aparece em baixo E vira tarefa)
@@ -22,6 +25,36 @@ export default function Input() {
   const [idAEditar, setIdAEditar] = useState<number | null>(null);
   const [textoEdicao, setTextoEdicao] = useState("");
   const [tecEdicao, setTecEdicao] = useState("React");
+
+  // 🔹 Carregar do localStorage quando o componente monta
+  useEffect(() => {
+    const salvoTarefas = localStorage.getItem(STORAGE_TAREFAS);
+    const salvoCategoria = localStorage.getItem(STORAGE_CATEGORIA);
+
+    if (salvoTarefas) {
+      try {
+        const parsed: Tarefa[] = JSON.parse(salvoTarefas);
+        setTarefas(parsed);
+      } catch {
+        // se der erro, deixa a lista vazia
+        setTarefas([]);
+      }
+    }
+
+    if (salvoCategoria) {
+      setCategoria(salvoCategoria);
+    }
+  }, []);
+
+  // 🔹 Guardar tarefas sempre que mudarem
+  useEffect(() => {
+    localStorage.setItem(STORAGE_TAREFAS, JSON.stringify(tarefas));
+  }, [tarefas]);
+
+  // 🔹 Guardar categoria sempre que mudar
+  useEffect(() => {
+    localStorage.setItem(STORAGE_CATEGORIA, categoria);
+  }, [categoria]);
 
   function adicionarTarefa() {
     if (textoDigitado.trim() === "") return;
@@ -74,7 +107,6 @@ export default function Input() {
 
   return (
     <main className="p-6 flex flex-col gap-8 items-center">
-
       {/* 1 — INPUT DE TEXTO (ÚNICO) */}
       <section className="w-full max-w-xl">
         <h2 className="text-lg font-semibold">Input de Texto</h2>
