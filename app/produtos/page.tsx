@@ -1,35 +1,76 @@
-'use client';
+'use client'; 
+// Next.js (App Router): indica que este ficheiro é um "Client Component".
+// Ou seja, pode usar hooks (useState/useEffect), localStorage, eventos, etc.
 
 import useSWR from 'swr';
+// SWR: biblioteca para buscar dados com cache, revalidação, estados (loading/error), etc.
+
 import { useEffect, useMemo, useState } from 'react';
+// Hooks do React:
+// - useState: estados locais
+// - useEffect: efeitos (executa código quando algo muda / quando monta)
+// - useMemo: memoriza cálculos pesados para não recalcular sempre
+
 import type { Produto } from '@/models/interfaces';
+// Tipo/Interface do produto (TypeScript): define os campos esperados (id, title, price, ...)
+
 import ProdutoCard from '@/components/ProdutosCard/produtoCard';
+// Componente de UI que mostra um produto (e botões: adicionar/remover, conforme props)
 
 const API_URL = 'https://deisishop.pythonanywhere.com/products/';
+// Endpoint para ir buscar a lista de produtos
+
 const CART_KEY = 'cart';
+// Chave usada no localStorage para guardar o carrinho
 
 type CartItem = { produto: Produto; qty: number };
+// Cada item do carrinho: o "produto" e a "qty" (quantidade)
 
+/**
+ * fetcher
+ * Função padrão do SWR: recebe um URL e devolve dados (aqui: Produto[])
+ * Regras:
+ * - Se HTTP não for OK => lança erro com mensagem adequada
+ * - Se o JSON não for uma lista => lança erro (proteção extra)
+ */
 async function fetcher(url: string): Promise<Produto[]> {
+  // Faz o pedido HTTP
   const res = await fetch(url);
 
+  // Se a resposta não for 200-299, tentamos extrair uma mensagem do servidor
   if (!res.ok) {
     let msg = `Erro HTTP ${res.status}`;
+
     try {
+      // Tentamos ler JSON para ver se existe data.message
       const data = await res.json();
       if (data?.message) msg = data.message;
-    } catch {}
+    } catch {
+      // Se não for JSON, ignoramos e usamos msg padrão
+    }
+
+    // Lançamos erro para o SWR/React mostrar na UI
     throw new Error(msg);
   }
 
+  // Se chegou aqui, a resposta é OK => ler o JSON
   const data = await res.json();
+
+  // Validação: a API deve devolver um array (lista)
   if (!Array.isArray(data)) {
     throw new Error('Resposta inválida da API: não é uma lista de produtos.');
   }
 
+  // Garantimos para TypeScript que isto é Produto[]
   return data as Produto[];
 }
 
+/**
+ * Spinner
+ * Componente simples de loading (carregamento)
+ * - Mostra uma bolinha a girar + texto
+ * - Inclui CSS dentro do próprio componente (style jsx)
+ */
 function Spinner() {
   return (
     <div className="center">
@@ -65,47 +106,93 @@ function Spinner() {
   );
 }
 
+/**
+ * ProdutosPage
+ * Página principal do catálogo + carrinho + checkout
+ */
 export default function ProdutosPage() {
+  /**
+   * SWR:
+   * - data: lista de produtos (quando chega)
+   * - error: erro se o fetch falhar
+   * - isLoading: true enquanto está a carregar
+   */
   const { data, error, isLoading } = useSWR<Produto[]>(API_URL, fetcher);
 
+  // texto de pesquisa
   const [search, setSearch] = useState('');
+
+  // lista filtrada/ordenada que vamos mostrar no ecrã
   const [filteredData, setFilteredData] = useState<Produto[]>([]);
+
+  // ordem selecionada (nome asc por defeito)
   const [order, setOrder] = useState('name-asc');
 
+  // carrinho (lista de CartItem)
   const [cart, setCart] = useState<CartItem[]>([]);
 
+  // checkout: estudante, cupão e nome
   const [isStudent, setIsStudent] = useState(false);
   const [coupon, setCoupon] = useState('');
   const [name, setName] = useState('');
+
+  // Resposta/erro do endpoint /buy/
   const [buyResponse, setBuyResponse] = useState<any>(null);
   const [buyError, setBuyError] = useState<string | null>(null);
   const [buyLoading, setBuyLoading] = useState(false);
 
+  /**
+   * useEffect #1: carregar carrinho do localStorage quando a página abre (monta)
+   * - corre 1 vez (array de dependências vazio [])
+   * - se existir JSON válido e for um array => coloca no state
+   */
   useEffect(() => {
     try {
       const raw = localStorage.getItem(CART_KEY);
       if (!raw) return;
+
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) setCart(parsed as CartItem[]);
-    } catch {}
+    } catch {
+      // Se houver erro (JSON inválido, etc.), ignoramos e começamos com carrinho vazio
+    }
   }, []);
 
+  /**
+   * useEffect #2: sempre que "cart" muda, guardamos no localStorage
+   * - isto dá persistência: se recarregar a página, o carrinho não desaparece
+   */
   useEffect(() => {
     try {
       localStorage.setItem(CART_KEY, JSON.stringify(cart));
-    } catch {}
+    } catch {
+      // Se localStorage falhar (modo privado, quota, etc.), ignoramos
+    }
   }, [cart]);
 
+  /**
+   * useEffect #3: filtrar + ordenar quando:
+   * - search muda
+   * - order muda
+   * - data (produtos) muda (quando a API responde)
+   */
   useEffect(() => {
+    // Se ainda não há data, não há lista para filtrar
     if (!data) {
       setFilteredData([]);
       return;
     }
 
+    // Normalizamos para minúsculas para pesquisa case-insensitive
     const termo = search.toLowerCase();
+
+    // Filtramos por título
     const lista = data.filter((p) => p.title.toLowerCase().includes(termo));
 
+    // Copiamos para não alterar o array original
     const ordenada = [...lista];
+
+    // Aplicamos ordenação conforme a seleção
     switch (order) {
       case 'name-asc':
         ordenada.sort((a, b) => a.title.localeCompare(b.title));
@@ -121,40 +208,73 @@ export default function ProdutosPage() {
         break;
     }
 
+    // Atualizamos o estado que será usado no render
     setFilteredData(ordenada);
   }, [search, order, data]);
 
+  /**
+   * isInCart
+   * verifica se um produto já está no carrinho (por id)
+   * Usado para, por exemplo, esconder o botão "Adicionar" no card.
+   */
   const isInCart = (produto: Produto) =>
     cart.some((i) => i.produto.id === produto.id);
 
+  /**
+   * handleAddToCart
+   * adiciona um produto ao carrinho
+   * - se já existir, aumenta qty
+   * - senão, adiciona com qty=1
+   *
+   * Nota: usa setCart(prev => ...) para garantir que trabalha com o estado mais recente.
+   */
   const handleAddToCart = (produto: Produto) => {
     setCart((prev) => {
+      // Procuramos se o produto já existe
       const idx = prev.findIndex((i) => i.produto.id === produto.id);
+
+      // Se existe, aumentamos a quantidade
       if (idx >= 0) {
         const copy = [...prev];
         copy[idx] = { ...copy[idx], qty: copy[idx].qty + 1 };
         return copy;
       }
+
+      // Se não existe, adicionamos novo item
       return [...prev, { produto, qty: 1 }];
     });
   };
 
+  /**
+   * handleRemoveFromCart
+   * remove 1 unidade do produto:
+   * - se qty <= 1 => remove o item do carrinho
+   * - senão => decrementa qty
+   */
   const handleRemoveFromCart = (produto: Produto) => {
     setCart((prev) => {
       const idx = prev.findIndex((i) => i.produto.id === produto.id);
       if (idx === -1) return prev;
 
       const item = prev[idx];
+
+      // Se estava com 1 unidade, remover completamente
       if (item.qty <= 1) {
         return prev.filter((i) => i.produto.id !== produto.id);
       }
 
+      // Caso contrário, reduzir a quantidade
       const copy = [...prev];
       copy[idx] = { ...item, qty: item.qty - 1 };
       return copy;
     });
   };
 
+  /**
+   * total
+   * cálculo do total do carrinho
+   * useMemo evita recalcular a cada render (só recalcula quando cart muda)
+   */
   const total = useMemo(() => {
     return cart.reduce(
       (acc, item) => acc + (Number(item.produto.price) || 0) * item.qty,
@@ -162,6 +282,15 @@ export default function ProdutosPage() {
     );
   }, [cart]);
 
+  /**
+   * buy
+   * finaliza a compra:
+   * - não faz nada se carrinho estiver vazio
+   * - cria um array de IDs repetidos conforme qty (garante quantidades)
+   * - envia POST para /buy/
+   * - se OK: guarda resposta e limpa carrinho
+   * - se erro: guarda erro
+   */
   const buy = async () => {
     if (cart.length === 0) return;
 
@@ -169,7 +298,7 @@ export default function ProdutosPage() {
     setBuyError(null);
     setBuyResponse(null);
 
-    // ✅ ids repetidos conforme qty (garante quantidades)
+    // ids repetidos conforme qty (ex: qty=3 => [id, id, id])
     const productIds = cart.flatMap((item) =>
       Array.from({ length: item.qty }, () => item.produto.id)
     );
@@ -186,10 +315,16 @@ export default function ProdutosPage() {
         }),
       });
 
+      // Lemos como texto para conseguir mostrar erro bruto do servidor
       const text = await response.text();
+
+      // Se falhou, lançamos erro com o texto devolvido
       if (!response.ok) throw new Error(text || response.statusText);
 
+      // Se correu bem, o servidor devolve JSON em texto => parse
       setBuyResponse(JSON.parse(text));
+
+      // Limpamos carrinho após compra bem-sucedida
       setCart([]);
     } catch (err: any) {
       setBuyError(err?.message ?? 'Erro ao comprar');
@@ -198,6 +333,12 @@ export default function ProdutosPage() {
     }
   };
 
+  /**
+   * Renderizações condicionais:
+   * - loading => spinner
+   * - error => mensagem + botão recarregar
+   * - data vazia => "sem produtos"
+   */
   if (isLoading) return <PageShell><Spinner /></PageShell>;
 
   if (error) {
@@ -209,6 +350,7 @@ export default function ProdutosPage() {
             <p className="muted">{error.message}</p>
           </div>
 
+          {/* Recarrega a página para tentar novamente */}
           <button className="btn" onClick={() => location.reload()}>
             Tentar novamente
           </button>
@@ -255,6 +397,7 @@ export default function ProdutosPage() {
     );
   }
 
+  // Se data não existe ou veio vazia
   if (!data || data.length === 0) {
     return (
       <PageShell>
@@ -283,8 +426,17 @@ export default function ProdutosPage() {
     );
   }
 
+  /**
+   * Render principal:
+   * - Pesquisa + ordenação
+   * - Lista de produtos (filteredData)
+   * - Carrinho com ProdutoCard + botões +/- qty
+   * - Total
+   * - Checkout (estudante, nome, cupão, comprar)
+   */
   return (
     <PageShell>
+      {/* Input de pesquisa */}
       <input
         type="text"
         value={search}
@@ -293,6 +445,7 @@ export default function ProdutosPage() {
         className="w-full max-w-md rounded-lg border px-3 py-2 mt-4"
       />
 
+      {/* Select para ordenar */}
       <select
         value={order}
         onChange={(e) => setOrder(e.target.value)}
@@ -305,19 +458,23 @@ export default function ProdutosPage() {
       </select>
 
       <h2 className="sectionTitle">Produtos</h2>
+
+      {/* Lista de produtos filtrados/ordenados */}
       <div className="grid">
         {filteredData.map((produto) => (
           <ProdutoCard
             key={produto.id}
             produto={produto}
             onAddToCart={handleAddToCart}
-            isInCart={isInCart(produto)} // ✅ depois de adicionar, o botão some
+            // isInCart: depois de adicionar, o ProdutoCard pode esconder o botão "Adicionar"
+            isInCart={isInCart(produto)}
           />
         ))}
       </div>
 
       <h2 className="sectionTitle">Carrinho</h2>
 
+      {/* Se carrinho está vazio */}
       {cart.length === 0 ? (
         <p className="muted">Carrinho vazio.</p>
       ) : (
@@ -325,21 +482,28 @@ export default function ProdutosPage() {
           <div className="grid">
             {cart.map((item) => (
               <div key={item.produto.id} className="cartItem">
+                {/* ProdutoCard no carrinho: aqui passamos onRemoveFromCart */}
                 <ProdutoCard
                   produto={item.produto}
                   onRemoveFromCart={handleRemoveFromCart}
                   isInCart={true}
                 />
 
-                {/* ✅ botões para aumentar/diminuir quantidade */}
+                {/* botões para diminuir/aumentar qty */}
                 <div className="qtyRow">
-                  <button className="qtyBtn" onClick={() => handleRemoveFromCart(item.produto)}>
+                  <button
+                    className="qtyBtn"
+                    onClick={() => handleRemoveFromCart(item.produto)}
+                  >
                     -
                   </button>
 
                   <span className="qtyText">Quantidade: {item.qty}</span>
 
-                  <button className="qtyBtn" onClick={() => handleAddToCart(item.produto)}>
+                  <button
+                    className="qtyBtn"
+                    onClick={() => handleAddToCart(item.produto)}
+                  >
                     +
                   </button>
                 </div>
@@ -347,12 +511,14 @@ export default function ProdutosPage() {
             ))}
           </div>
 
+          {/* Total calculado */}
           <div className="totalBox">
             <strong>Total:</strong> {total.toFixed(2)} €
           </div>
 
           <h2 className="sectionTitle">Finalizar compra</h2>
 
+          {/* Checkbox de estudante */}
           <label className="flex items-center gap-2 mt-3">
             <input
               type="checkbox"
@@ -362,6 +528,7 @@ export default function ProdutosPage() {
             Estudante DEISI
           </label>
 
+          {/* Nome */}
           <input
             type="text"
             value={name}
@@ -370,6 +537,7 @@ export default function ProdutosPage() {
             className="mt-3 w-full max-w-md rounded-lg border px-3 py-2"
           />
 
+          {/* Cupão */}
           <input
             type="text"
             value={coupon}
@@ -378,6 +546,7 @@ export default function ProdutosPage() {
             className="mt-3 w-full max-w-md rounded-lg border px-3 py-2"
           />
 
+          {/* Botão comprar */}
           <button
             onClick={buy}
             disabled={buyLoading || cart.length === 0}
@@ -386,16 +555,19 @@ export default function ProdutosPage() {
             {buyLoading ? 'A comprar...' : 'Comprar'}
           </button>
 
+          {/* Resposta do servidor (debug/feedback) */}
           {buyResponse && (
             <pre className="mt-4 rounded-lg bg-gray-100 p-3 text-sm">
               {JSON.stringify(buyResponse, null, 2)}
             </pre>
           )}
 
+          {/* Erro da compra */}
           {buyError && <p className="mt-4 text-red-600">{buyError}</p>}
         </>
       )}
 
+      {/* CSS da página */}
       <style jsx>{`
         .grid {
           margin-top: 18px;
@@ -448,6 +620,13 @@ export default function ProdutosPage() {
   );
 }
 
+/**
+ * PageShell
+ * “Layout” simples da página:
+ * - header fixo (sticky)
+ * - área principal (main) com largura máxima
+ * - estilos para fundo e topo
+ */
 function PageShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="page">
@@ -461,6 +640,7 @@ function PageShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
+      {/* children = tudo o que a página renderiza dentro do layout */}
       <main className="main">{children}</main>
 
       <style jsx>{`
