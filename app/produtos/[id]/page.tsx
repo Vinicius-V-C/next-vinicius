@@ -1,10 +1,9 @@
 'use client';
 
 import useSWR from 'swr';
-import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import type { Produto } from '@/models/interfaces';
 import ProdutoDetalhe from '@/components/produtosDetalhes/produtoDetalhes';
-import Link from 'next/link';
 
 const API_URL = 'https://deisishop.pythonanywhere.com/products/';
 
@@ -19,6 +18,14 @@ const fetcher = async (url: string) => {
 
   return res.json();
 };
+
+function Spinner() {
+  return (
+    <div className="flex justify-center items-center h-64">
+      <div className="w-12 h-12 border-4 border-gray-300 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+}
 
 function PageShell({ children }: { children: React.ReactNode }) {
   return (
@@ -53,45 +60,27 @@ function ErrorBox({ title, message }: { title: string; message: string }) {
   );
 }
 
-function LoadingBox() {
-  return (
-    <div className="grid place-items-center py-16">
-      <div className="w-12 h-12 border-4 border-gray-300 border-t-transparent rounded-full animate-spin" />
-      <p className="mt-3 text-sm text-gray-500">A carregar produto...</p>
-    </div>
-  );
-}
+export default function ProdutoPage({ params }: { params: { id: string } }) {
+  const idNumber = Number(params.id);
 
-export default function ProdutoPage() {
-  const pathname = usePathname();
-  const partes = pathname.split('/').filter(Boolean);
-  const lastSegment = partes[partes.length - 1];
-
-  const idNumber = Number(lastSegment);
-
-  if (!lastSegment || Number.isNaN(idNumber)) {
+  if (!params.id || Number.isNaN(idNumber)) {
     return (
       <PageShell>
         <ErrorBox
           title="ID inválido"
-          message={`ID inválido na rota: ${String(lastSegment)}`}
+          message={`ID inválido na rota: ${String(params.id)}`}
         />
       </PageShell>
     );
   }
 
   const url = `${API_URL}${idNumber}`;
-  console.log('URL do detalhe:', url);
-
   const { data, error, isLoading } = useSWR<Produto>(url, fetcher);
 
   if (error) {
     return (
       <PageShell>
-        <ErrorBox
-          title="Erro ao carregar produto"
-          message={error.message}
-        />
+        <ErrorBox title="Erro ao carregar produto" message={error.message} />
       </PageShell>
     );
   }
@@ -99,7 +88,7 @@ export default function ProdutoPage() {
   if (isLoading || !data) {
     return (
       <PageShell>
-        <LoadingBox />
+        <Spinner />
       </PageShell>
     );
   }

@@ -23,16 +23,6 @@ export default function ProdutoCard({
     ? produto.image
     : IMAGE_BASE_URL + produto.image;
 
-  const rating = produto.rating?.rate ?? 0;
-  const estrelasInteiras = Math.floor(rating);
-  const meiaEstrela = rating % 1 >= 0.5;
-  const maxEstrelas = 5;
-
-  const estrelas =
-    '⭐'.repeat(estrelasInteiras) +
-    (meiaEstrela ? '✰' : '') +
-    '☆'.repeat(maxEstrelas - estrelasInteiras - (meiaEstrela ? 1 : 0));
-
   return (
     <article className="group rounded-2xl border bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
       {/* imagem */}
@@ -60,23 +50,17 @@ export default function ProdutoCard({
           {produto.price} €
         </p>
 
-        {/* rating */}
-        <div className="text-sm text-yellow-500">
-          {estrelas}
-          <span className="text-gray-500 text-xs ml-2">
-            ({produto.rating.rate}) · {produto.rating.count}
-          </span>
-        </div>
-
         {/* ações */}
         <div className="mt-3 flex gap-2">
+          {/* botão + info (obrigatório no enunciado) */}
           <Link
             href={`/produtos/${produto.id}`}
             className="flex-1 text-center rounded-lg border px-3 py-1.5 text-sm font-medium hover:bg-gray-100"
           >
-            Ver detalhes
+            + info
           </Link>
 
+          {/* carrinho */}
           {onAddToCart && !isInCart && (
             <button
               onClick={() => onAddToCart(produto)}
