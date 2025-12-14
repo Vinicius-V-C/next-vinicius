@@ -1,89 +1,256 @@
-"use client";
+'use client';
 
-import useSWR from "swr";
-import Image from "next/image";
-import type { Product } from "@/models/interfaces";
+import useSWR from 'swr';
+import type { Produto } from '@/models/interfaces';
+import ProdutoCard from '@/components/ProdutosCard/produtoCard';
 
-const API_URL = "https://deisishop.pythonanywhere.com/products/";
+const API_URL = 'https://deisishop.pythonanywhere.com/products';
 
-const fetcher = async (url: string) => {
+async function fetcher(url: string): Promise<Produto[]> {
   const res = await fetch(url);
 
   if (!res.ok) {
-    throw new Error(`Erro: ${res.status} ${res.statusText}`);
+    let msg = `Erro HTTP ${res.status}`;
+    try {
+      const data = await res.json();
+      if (data?.message) msg = data.message;
+    } catch {
+      // ignora se não vier JSON
+    }
+    throw new Error(msg);
   }
-  return res.json();
-};
+
+  const data = await res.json();
+  if (!Array.isArray(data)) {
+    throw new Error('Resposta inválida da API: não é uma lista de produtos.');
+  }
+
+  return data as Produto[];
+}
+
+function Spinner() {
+  return (
+    <div className="center">
+      <div className="spinner" />
+      <p className="muted">A carregar produtos...</p>
+
+      <style jsx>{`
+        .center {
+          min-height: 55vh;
+          display: grid;
+          place-items: center;
+          gap: 12px;
+        }
+        .spinner {
+          width: 44px;
+          height: 44px;
+          border: 4px solid rgba(0, 0, 0, 0.12);
+          border-top-color: rgba(0, 0, 0, 0.7);
+          border-radius: 999px;
+          animation: spin 0.9s linear infinite;
+        }
+        .muted {
+          color: rgba(0, 0, 0, 0.6);
+          margin: 0;
+        }
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
 
 export default function ProdutosPage() {
-  const { data, error, isLoading } = useSWR<Product[]>(API_URL, fetcher, {
-    revalidateOnFocus: false,
-    refreshInterval: 0,
-  });
+  const { data, error, isLoading } = useSWR<Produto[]>(API_URL, fetcher);
 
-  if (isLoading)
-    return (
-      <main className="min-h-screen bg-sky-200 flex items-center justify-center">
-        <p>A carregar...</p>
-      </main>
-    );
+  if (isLoading) return <PageShell><Spinner /></PageShell>;
 
-  if (error)
+  if (error) {
     return (
-      <main className="min-h-screen bg-sky-200 p-4">
-        <h1 className="text-3xl font-bold mb-4">Produtos</h1>
-        <p className="text-red-700">
-          {error.message}
-          Ocorreu um erro ao carregar os produtos.
-        </p>
-      </main>
-    );
+      <PageShell>
+        <div className="notice error">
+          <div>
+            <h2>Não foi possível carregar os produtos</h2>
+            <p className="muted">{error.message}</p>
+          </div>
 
-  if (!data)
-    return (
-      <main className="min-h-screen bg-sky-200 p-4">
-        <h1 className="text-3xl font-bold mb-4">Produtos</h1>
-        <p>Sem dados disponíveis.</p>
-      </main>
+          <button className="btn" onClick={() => location.reload()}>
+            Tentar novamente
+          </button>
+        </div>
+
+        <style jsx>{`
+          .notice {
+            margin-top: 18px;
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            gap: 16px;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px);
+          }
+          .error {
+            border-color: rgba(220, 20, 60, 0.25);
+            background: rgba(220, 20, 60, 0.06);
+          }
+          h2 {
+            margin: 0 0 6px 0;
+            font-size: 18px;
+          }
+          .muted {
+            margin: 0;
+            color: rgba(0, 0, 0, 0.6);
+          }
+          .btn {
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            background: white;
+            cursor: pointer;
+            font-weight: 600;
+          }
+          .btn:hover {
+            border-color: rgba(0, 0, 0, 0.25);
+          }
+        `}</style>
+      </PageShell>
     );
+  }
+
+  if (!data || data.length === 0) {
+    return (
+      <PageShell>
+        <div className="empty">
+          <h2>Sem produtos</h2>
+          <p className="muted">A API não devolveu produtos para mostrar.</p>
+        </div>
+
+        <style jsx>{`
+          .empty {
+            margin-top: 18px;
+            padding: 22px;
+            border-radius: 16px;
+            border: 1px dashed rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.7);
+          }
+          .muted {
+            margin: 6px 0 0 0;
+            color: rgba(0, 0, 0, 0.6);
+          }
+          h2 {
+            margin: 0;
+          }
+        `}</style>
+      </PageShell>
+    );
+  }
 
   return (
-    <main className="p-4 bg-sky-200 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6">Produtos</h1>
-
-      <div className="grid grid-cols-1 gap-6">
-        {data.map((p) => (
-          <div
-            key={p.id}
-            className="bg-white rounded-xl shadow p-6 flex flex-col items-center text-center space-y-4"
-          >
-            <Image
-              src={p.image}
-              width={220}
-              height={220}
-              alt={p.title}
-              className="rounded-md object-contain"
-            />
-
-            <h2 className="text-xl font-semibold">{p.title}</h2>
-            <p className="text-sm text-gray-500 italic">{p.category}</p>
-
-            {/* ÚNICA ALTERAÇÃO AQUI */}
-            <p className="text-2xl font-bold">{Number(p.price).toFixed(2)} €</p>
-
-            <p className="text-base text-gray-700 leading-relaxed">
-              {p.description}
-            </p>
-
-            <p className="text-base font-medium text-gray-800">
-              ⭐ {p.rating?.rate ?? "N/A"}{" "}
-              <span className="text-gray-500">
-                ({p.rating?.count ?? 0} avaliações)
-              </span>
-            </p>
-          </div>
+    <PageShell>
+      <div className="grid">
+        {data.map((produto) => (
+          <ProdutoCard key={produto.id} produto={produto} />
         ))}
       </div>
-    </main>
+
+      <style jsx>{`
+        .grid {
+          margin-top: 18px;
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+          gap: 16px;
+        }
+      `}</style>
+    </PageShell>
+  );
+}
+
+function PageShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="page">
+      <header className="header">
+        <div className="brand">
+          <span className="logo">DEISI</span>
+          <div>
+            <h1>Shop</h1>
+            <p>Catálogo de produtos</p>
+          </div>
+        </div>
+      </header>
+
+      <main className="main">{children}</main>
+
+      <style jsx>{`
+        .page {
+          min-height: 100vh;
+          background: radial-gradient(
+              900px 400px at 10% 10%,
+              rgba(0, 0, 0, 0.06),
+              transparent 60%
+            ),
+            radial-gradient(
+              700px 350px at 90% 0%,
+              rgba(0, 0, 0, 0.05),
+              transparent 55%
+            ),
+            #f7f7fb;
+        }
+
+        .header {
+          position: sticky;
+          top: 0;
+          z-index: 10;
+          background: rgba(247, 247, 251, 0.75);
+          backdrop-filter: blur(10px);
+          border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .main {
+          max-width: 1100px;
+          margin: 0 auto;
+          padding: 18px 16px 28px 16px;
+        }
+
+        .brand {
+          max-width: 1100px;
+          margin: 0 auto;
+          padding: 14px 16px;
+          display: flex;
+          gap: 12px;
+          align-items: center;
+        }
+
+        .logo {
+          width: 44px;
+          height: 44px;
+          border-radius: 14px;
+          display: grid;
+          place-items: center;
+          font-weight: 900;
+          letter-spacing: -0.6px;
+          border: 1px solid rgba(0, 0, 0, 0.12);
+          background: white;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+        }
+
+        h1 {
+          margin: 0;
+          font-size: 18px;
+          letter-spacing: -0.3px;
+        }
+
+        p {
+          margin: 2px 0 0 0;
+          color: rgba(0, 0, 0, 0.6);
+          font-size: 13px;
+        }
+      `}</style>
+    </div>
   );
 }

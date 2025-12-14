@@ -1,16 +1,14 @@
-// Avaliação (rating) de um produto
 export interface Rating {
-  rate: number;   // classificação média
-  count: number;  // número de avaliações
+  rate: number;
+  count: number;
 }
 
-// Produto devolvido pela API
-export interface Product {
+export interface Produto {
   id: number;
   title: string;
-  price: number;
   description: string;
-  category: string;
+  price: number;
   image: string;
-  rating: Rating; // usa a interface Rating definida acima
+  rating: Rating;
+  category: string;
 }
