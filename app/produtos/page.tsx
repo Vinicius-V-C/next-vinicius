@@ -1,11 +1,14 @@
 'use client';
 
 import useSWR from 'swr';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Produto } from '@/models/interfaces';
 import ProdutoCard from '@/components/ProdutosCard/produtoCard';
 
-const API_URL = 'https://deisishop.pythonanywhere.com/products';
+const API_URL = 'https://deisishop.pythonanywhere.com/products/';
+const CART_KEY = 'cart';
+
+type CartItem = { produto: Produto; qty: number };
 
 async function fetcher(url: string): Promise<Produto[]> {
   const res = await fetch(url);
@@ -15,9 +18,7 @@ async function fetcher(url: string): Promise<Produto[]> {
     try {
       const data = await res.json();
       if (data?.message) msg = data.message;
-    } catch {
-      // ignora se não vier JSON
-    }
+    } catch {}
     throw new Error(msg);
   }
 
@@ -67,11 +68,34 @@ function Spinner() {
 export default function ProdutosPage() {
   const { data, error, isLoading } = useSWR<Produto[]>(API_URL, fetcher);
 
-  
   const [search, setSearch] = useState('');
   const [filteredData, setFilteredData] = useState<Produto[]>([]);
+  const [order, setOrder] = useState('name-asc');
 
- 
+  const [cart, setCart] = useState<CartItem[]>([]);
+
+  const [isStudent, setIsStudent] = useState(false);
+  const [coupon, setCoupon] = useState('');
+  const [name, setName] = useState('');
+  const [buyResponse, setBuyResponse] = useState<any>(null);
+  const [buyError, setBuyError] = useState<string | null>(null);
+  const [buyLoading, setBuyLoading] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(CART_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) setCart(parsed as CartItem[]);
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    } catch {}
+  }, [cart]);
+
   useEffect(() => {
     if (!data) {
       setFilteredData([]);
@@ -79,12 +103,100 @@ export default function ProdutosPage() {
     }
 
     const termo = search.toLowerCase();
-    const lista = data.filter((p) =>
-      p.title.toLowerCase().includes(termo)
+    const lista = data.filter((p) => p.title.toLowerCase().includes(termo));
+
+    const ordenada = [...lista];
+    switch (order) {
+      case 'name-asc':
+        ordenada.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case 'name-desc':
+        ordenada.sort((a, b) => b.title.localeCompare(a.title));
+        break;
+      case 'price-asc':
+        ordenada.sort((a, b) => a.price - b.price);
+        break;
+      case 'price-desc':
+        ordenada.sort((a, b) => b.price - a.price);
+        break;
+    }
+
+    setFilteredData(ordenada);
+  }, [search, order, data]);
+
+  const isInCart = (produto: Produto) =>
+    cart.some((i) => i.produto.id === produto.id);
+
+  const handleAddToCart = (produto: Produto) => {
+    setCart((prev) => {
+      const idx = prev.findIndex((i) => i.produto.id === produto.id);
+      if (idx >= 0) {
+        const copy = [...prev];
+        copy[idx] = { ...copy[idx], qty: copy[idx].qty + 1 };
+        return copy;
+      }
+      return [...prev, { produto, qty: 1 }];
+    });
+  };
+
+  const handleRemoveFromCart = (produto: Produto) => {
+    setCart((prev) => {
+      const idx = prev.findIndex((i) => i.produto.id === produto.id);
+      if (idx === -1) return prev;
+
+      const item = prev[idx];
+      if (item.qty <= 1) {
+        return prev.filter((i) => i.produto.id !== produto.id);
+      }
+
+      const copy = [...prev];
+      copy[idx] = { ...item, qty: item.qty - 1 };
+      return copy;
+    });
+  };
+
+  const total = useMemo(() => {
+    return cart.reduce(
+      (acc, item) => acc + (Number(item.produto.price) || 0) * item.qty,
+      0
+    );
+  }, [cart]);
+
+  const buy = async () => {
+    if (cart.length === 0) return;
+
+    setBuyLoading(true);
+    setBuyError(null);
+    setBuyResponse(null);
+
+    // ✅ ids repetidos conforme qty (garante quantidades)
+    const productIds = cart.flatMap((item) =>
+      Array.from({ length: item.qty }, () => item.produto.id)
     );
 
-    setFilteredData(lista);
-  }, [search, data]);
+    try {
+      const response = await fetch('https://deisishop.pythonanywhere.com/buy/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          products: productIds,
+          student: isStudent,
+          coupon: coupon,
+          name: name,
+        }),
+      });
+
+      const text = await response.text();
+      if (!response.ok) throw new Error(text || response.statusText);
+
+      setBuyResponse(JSON.parse(text));
+      setCart([]);
+    } catch (err: any) {
+      setBuyError(err?.message ?? 'Erro ao comprar');
+    } finally {
+      setBuyLoading(false);
+    }
+  };
 
   if (isLoading) return <PageShell><Spinner /></PageShell>;
 
@@ -173,7 +285,6 @@ export default function ProdutosPage() {
 
   return (
     <PageShell>
-     
       <input
         type="text"
         value={search}
@@ -182,12 +293,108 @@ export default function ProdutosPage() {
         className="w-full max-w-md rounded-lg border px-3 py-2 mt-4"
       />
 
+      <select
+        value={order}
+        onChange={(e) => setOrder(e.target.value)}
+        className="w-full max-w-md rounded-lg border px-3 py-2 mt-3"
+      >
+        <option value="name-asc">Nome (A → Z)</option>
+        <option value="name-desc">Nome (Z → A)</option>
+        <option value="price-asc">Preço (crescente)</option>
+        <option value="price-desc">Preço (decrescente)</option>
+      </select>
+
+      <h2 className="sectionTitle">Produtos</h2>
       <div className="grid">
-      
         {filteredData.map((produto) => (
-          <ProdutoCard key={produto.id} produto={produto} />
+          <ProdutoCard
+            key={produto.id}
+            produto={produto}
+            onAddToCart={handleAddToCart}
+            isInCart={isInCart(produto)} // ✅ depois de adicionar, o botão some
+          />
         ))}
       </div>
+
+      <h2 className="sectionTitle">Carrinho</h2>
+
+      {cart.length === 0 ? (
+        <p className="muted">Carrinho vazio.</p>
+      ) : (
+        <>
+          <div className="grid">
+            {cart.map((item) => (
+              <div key={item.produto.id} className="cartItem">
+                <ProdutoCard
+                  produto={item.produto}
+                  onRemoveFromCart={handleRemoveFromCart}
+                  isInCart={true}
+                />
+
+                {/* ✅ botões para aumentar/diminuir quantidade */}
+                <div className="qtyRow">
+                  <button className="qtyBtn" onClick={() => handleRemoveFromCart(item.produto)}>
+                    -
+                  </button>
+
+                  <span className="qtyText">Quantidade: {item.qty}</span>
+
+                  <button className="qtyBtn" onClick={() => handleAddToCart(item.produto)}>
+                    +
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="totalBox">
+            <strong>Total:</strong> {total.toFixed(2)} €
+          </div>
+
+          <h2 className="sectionTitle">Finalizar compra</h2>
+
+          <label className="flex items-center gap-2 mt-3">
+            <input
+              type="checkbox"
+              checked={isStudent}
+              onChange={(e) => setIsStudent(e.target.checked)}
+            />
+            Estudante DEISI
+          </label>
+
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Nome (opcional)"
+            className="mt-3 w-full max-w-md rounded-lg border px-3 py-2"
+          />
+
+          <input
+            type="text"
+            value={coupon}
+            onChange={(e) => setCoupon(e.target.value)}
+            placeholder="Cupão de desconto"
+            className="mt-3 w-full max-w-md rounded-lg border px-3 py-2"
+          />
+
+          <button
+            onClick={buy}
+            disabled={buyLoading || cart.length === 0}
+            className="mt-4 rounded-xl bg-green-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50"
+          >
+            {buyLoading ? 'A comprar...' : 'Comprar'}
+          </button>
+
+          {buyResponse && (
+            <pre className="mt-4 rounded-lg bg-gray-100 p-3 text-sm">
+              {JSON.stringify(buyResponse, null, 2)}
+            </pre>
+          )}
+
+          {buyError && <p className="mt-4 text-red-600">{buyError}</p>}
+        </>
+      )}
 
       <style jsx>{`
         .grid {
@@ -195,6 +402,46 @@ export default function ProdutosPage() {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
           gap: 16px;
+        }
+        .sectionTitle {
+          margin-top: 26px;
+          font-size: 18px;
+          font-weight: 700;
+        }
+        .muted {
+          color: rgba(0, 0, 0, 0.6);
+          margin-top: 12px;
+        }
+        .totalBox {
+          margin-top: 16px;
+          padding: 12px 14px;
+          border-radius: 12px;
+          border: 1px solid rgba(0, 0, 0, 0.12);
+          background: rgba(255, 255, 255, 0.8);
+          display: inline-block;
+        }
+        .qtyRow {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          margin-top: 10px;
+        }
+        .qtyBtn {
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
+          border: 1px solid rgba(0, 0, 0, 0.15);
+          background: white;
+          font-weight: 800;
+          cursor: pointer;
+        }
+        .qtyBtn:hover {
+          background: rgba(0, 0, 0, 0.04);
+        }
+        .qtyText {
+          font-size: 14px;
+          color: rgba(0, 0, 0, 0.7);
         }
       `}</style>
     </PageShell>

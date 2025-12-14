@@ -1,5 +1,6 @@
 'use client';
 
+import { use } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
 import type { Produto } from '@/models/interfaces';
@@ -23,6 +24,15 @@ function Spinner() {
   return (
     <div className="flex justify-center items-center h-64">
       <div className="w-12 h-12 border-4 border-gray-300 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+}
+
+function ErrorBox({ title, message }: { title: string; message: string }) {
+  return (
+    <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
+      <h2 className="font-semibold text-red-800">{title}</h2>
+      <p className="mt-1 text-sm text-red-700">{message}</p>
     </div>
   );
 }
@@ -51,24 +61,21 @@ function PageShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-function ErrorBox({ title, message }: { title: string; message: string }) {
-  return (
-    <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
-      <h2 className="font-semibold text-red-800">{title}</h2>
-      <p className="mt-1 text-sm text-red-700">{message}</p>
-    </div>
-  );
-}
+export default function ProdutoPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  // ✅ Next 15: params é Promise → precisa de use(params)
+  const { id } = use(params);
+  const idNumber = Number(id);
 
-export default function ProdutoPage({ params }: { params: { id: string } }) {
-  const idNumber = Number(params.id);
-
-  if (!params.id || Number.isNaN(idNumber)) {
+  if (!id || Number.isNaN(idNumber)) {
     return (
       <PageShell>
         <ErrorBox
           title="ID inválido"
-          message={`ID inválido na rota: ${String(params.id)}`}
+          message={`ID inválido na rota: ${String(id)}`}
         />
       </PageShell>
     );
