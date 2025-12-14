@@ -1,6 +1,7 @@
 'use client';
 
 import useSWR from 'swr';
+import { useEffect, useState } from 'react';
 import type { Produto } from '@/models/interfaces';
 import ProdutoCard from '@/components/ProdutosCard/produtoCard';
 
@@ -65,6 +66,25 @@ function Spinner() {
 
 export default function ProdutosPage() {
   const { data, error, isLoading } = useSWR<Produto[]>(API_URL, fetcher);
+
+  
+  const [search, setSearch] = useState('');
+  const [filteredData, setFilteredData] = useState<Produto[]>([]);
+
+ 
+  useEffect(() => {
+    if (!data) {
+      setFilteredData([]);
+      return;
+    }
+
+    const termo = search.toLowerCase();
+    const lista = data.filter((p) =>
+      p.title.toLowerCase().includes(termo)
+    );
+
+    setFilteredData(lista);
+  }, [search, data]);
 
   if (isLoading) return <PageShell><Spinner /></PageShell>;
 
@@ -153,8 +173,18 @@ export default function ProdutosPage() {
 
   return (
     <PageShell>
+     
+      <input
+        type="text"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Pesquisar produto pelo nome..."
+        className="w-full max-w-md rounded-lg border px-3 py-2 mt-4"
+      />
+
       <div className="grid">
-        {data.map((produto) => (
+      
+        {filteredData.map((produto) => (
           <ProdutoCard key={produto.id} produto={produto} />
         ))}
       </div>
