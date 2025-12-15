@@ -37,4 +37,5 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 
 
-https://next-vinicius-qd3jt1xsy-vinicius-projects-b6db65c8.vercel.app
+https://next-vinicius-ik3g.vercel.app/produtos
+
